@@ -1,7 +1,29 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { auth } from '../firebase'
+
+
 
 const Menu = () => {
+    let navigate = useNavigate();
+    const [usuario, setUsuario] = useState(null);
+
+    useEffect(() => {
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                setUsuario(user.email);
+            }
+        })
+    }, [])
+
+    const salir = () => {
+        auth.signOut().then(res => {
+            setUsuario(null)
+            navigate('/login')
+        }).catch(e => console.error(e))
+    }
+
+
     return (
         <div>
             <nav className='navbar navbar-expand-lg navbar-dark bg-dark'>
@@ -15,19 +37,24 @@ const Menu = () => {
                             <li className='nav-item'>
                                 <Link to={'/'} className="nav-link">Inicio</Link>
                             </li>
-                            <li className='nav-item'>
-                                <Link to={'/login'} className="nav-link">Login</Link>
-                            </li>
-                            <li className='nav-item'>
-                                <Link to={'/admin'} className="nav-link">Admin</Link>
-                            </li>
-
+                            {
+                                usuario != null ?
+                                    <li className='nav-item'>
+                                        <Link to={'/admin'} className="nav-link">Admin</Link>
+                                    </li>
+                                    : <span></span>
+                            }
                         </ul>
+                        {
+                            usuario != null ? <button className="btn btn-danger" onClick={salir} >Cerrar Sesion</button> : <li className='nav-item'>
+                                <Link to={'/login'} className="btn btn-primary">Login</Link>
+                            </li>
+                        }
                     </div>
                 </div>
 
-            </nav>
-        </div>
+            </nav >
+        </div >
     )
 }
 
